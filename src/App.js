@@ -39,7 +39,7 @@ class App extends Component {
   };
 
   getPaydown = async () => {
-    const url = `${this.API_URL}/amortization/paydown?payment=${1000}`; //todo payment field
+    const url = `${this.API_URL}/amortization/paydown?payment=${2000}`; //todo payment field
     console.log(`Calling paydown calculator: ${url}`);
     let paydown;
     const paydownResult = await axios.get(url);
