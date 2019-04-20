@@ -3,22 +3,30 @@ import React, { Component } from "react";
 import "./App.css";
 import NavBar from "./components/NavBar";
 // import AddTask from "./components/AddTask";
-import Accounts from "./components/Accounts";
-import AccountDetail from "./components/AccountDetail";
+import Accounts from "./components/Account/Accounts";
+import AccountDetail from "./components/Account/AccountDetail";
 import axios from "axios";
+import DebtPaydown from "./components/DebtPaydown/DebtPaydown";
 
 class App extends Component {
   API_URL = "http://localhost:3001/services/v1";
   id = 9999;
   state = {
     accounts: [],
-    amortization: []
+    amortization: [],
+    paydown: { accounts: [], payments: [], principal: [] }
   };
 
   async componentDidMount() {
     const res = await axios.get(`${this.API_URL}/accounts`);
+
     const tempAccount = null;
-    this.setState({ accounts: res.data, selectedAccount: tempAccount });
+    const paydown = await this.getPaydown();
+    this.setState({
+      accounts: res.data,
+      selectedAccount: tempAccount,
+      paydown
+    });
   }
 
   getAmortization = async account => {
@@ -28,6 +36,30 @@ class App extends Component {
     }&rate=${account.interest}&payment=${account.payment}`;
     console.log(`Calling amortization calculator: ${url}`);
     return await axios.get(url);
+  };
+
+  getPaydown = async () => {
+    const url = `${this.API_URL}/amortization/paydown?payment=${1000}`; //todo payment field
+    console.log(`Calling paydown calculator: ${url}`);
+    let paydown;
+    const paydownResult = await axios.get(url);
+    if (paydownResult.status === 200 && paydownResult.data) {
+      paydown = {
+        accounts: paydownResult.data.accounts,
+        payments: paydownResult.data.payments.map((mth, i) => {
+          return { ...mth, month: i };
+        }),
+        principal: paydownResult.data.principal.map((mth, i) => {
+          return { ...mth, month: i };
+        })
+      };
+    } else {
+      paydown = { accounts: [], payments: [], principal: [] };
+      console.log(
+        `Status: ${paydownResult.status} result: ${paydownResult.data}`
+      );
+    }
+    return paydown;
   };
 
   viewAccount = async selectedId => {
@@ -77,12 +109,17 @@ class App extends Component {
     }
   };
 
+  PayDown = () => {
+    return <DebtPaydown paydown={this.state.paydown} />;
+  };
+
   render() {
     return (
       <div className="App">
         <div className="container">
           <NavBar />
-          {this.AccountsOrDetail()}
+          {this.PayDown()}
+          {/* {this.AccountsOrDetail()} */}
         </div>
       </div>
     );

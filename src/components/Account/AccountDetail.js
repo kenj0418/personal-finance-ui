@@ -14,7 +14,6 @@ export class AccountDetail extends Component {
 
   render() {
     //todo add "extra payment" field that then recalculates amortization with additional payment each month
-    //todo add amortation table below the chart
     // interest, payment
     const { id, title, principal } = this.props.account;
 
